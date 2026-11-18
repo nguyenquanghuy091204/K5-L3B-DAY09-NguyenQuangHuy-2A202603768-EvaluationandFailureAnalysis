@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from fractions import Fraction
 
 import numpy as np
 from scipy.stats import bootstrap
@@ -98,16 +99,30 @@ def paired_bootstrap(a: Sequence[float], b: Sequence[float], *, n_resamples: int
     return (diff, float(res.confidence_interval.low), float(res.confidence_interval.high))
 
 
+def _validate_pass_k_args(n: int, c: int, k: int) -> tuple[int, int, int]:
+    """Validate sample, pass, and draw counts for pass@k and pass^k."""
+    if any(isinstance(x, bool) or not isinstance(x, (int, np.integer)) for x in (n, c, k)):
+        raise ValueError("n, c, k must be integers")
+    n_i, c_i, k_i = int(n), int(c), int(k)
+    if n_i <= 0 or k_i <= 0 or c_i < 0 or c_i > n_i or k_i > n_i:
+        raise ValueError(f"invalid (n={n_i}, c={c_i}, k={k_i}): require 0 <= c <= n and 1 <= k <= n")
+    return n_i, c_i, k_i
+
+
 def pass_at_k(n: int, c: int, k: int) -> float:
     """Probability that AT LEAST ONE of k trials drawn from n (c of them passing) passes.
     Unbiased estimator (Chen et al. 2021): 1 - C(n-c, k) / C(n, k). Raise ValueError if k > n."""
-    # TODO M6
-    raise NotImplementedError
+    n_i, c_i, k_i = _validate_pass_k_args(n, c, k)
+    if n_i - c_i < k_i:
+        return 1.0
+    return float(1 - Fraction(math.comb(n_i - c_i, k_i), math.comb(n_i, k_i)))
 
 
 def pass_hat_k(n: int, c: int, k: int) -> float:
     """pass^k (tau-bench, Yao et al. 2024): probability that ALL k trials drawn from n pass.
     Unbiased estimator: C(c, k) / C(n, k). Raise ValueError if k > n.
     pass^k <= pass@1 <= pass@k; a reliable agent keeps pass^k close to pass@1."""
-    # TODO M6
-    raise NotImplementedError
+    n_i, c_i, k_i = _validate_pass_k_args(n, c, k)
+    if c_i < k_i:
+        return 0.0
+    return float(Fraction(math.comb(c_i, k_i), math.comb(n_i, k_i)))
