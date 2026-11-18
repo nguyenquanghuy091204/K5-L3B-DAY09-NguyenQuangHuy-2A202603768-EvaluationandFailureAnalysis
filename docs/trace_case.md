@@ -14,7 +14,7 @@ Lệnh in ra ba phần: các event trong trace (`reply`, `decision`, `model_over
 
 | Trường | Nội dung |
 |---|---|
-| Trial | `seeded_regression C-002@11`, report `E-seeded_regression-20261118-7815` (`src/reports/eval_seeded_regression.json`), trace `R-seeded_regression-C-002-s11` |
+| Trial | `seeded_regression C-002@11`, report `E-seeded_regression-20261118-e2d9` (`src/reports/eval_seeded_regression.json`), trace `R-seeded_regression-C-002-s11` |
 | Triệu chứng | Grader `lab8.metrics.trial_pass` fail với lý do `status resolved != denied`; ledger ghi `refund_vnd=20000`, `refund_count=1` (nhãn: `0`, `denied`), còn bước 6 `reply` nói `"Dạ, LogiX đã hoàn 20.000đ cho đơn O-202."`. |
 | Bước sai đầu tiên | Event `3` · `model_override` · `{"delay_days": 5}` |
 | Vì sao là bước *đầu tiên* | Event `1` (`handoff`) chỉ gửi allowlist `handoff.v1` với các tool đọc hợp lệ; event `2` (`investigator`) truy vấn đúng DB ra đơn `O-202` có `status="delivered"`, `delay_days=2`, `shipping_fee_vnd=20000`. Chỉ tới event `3`, agent mới lấy số `5` ngày trong ticket ghi đè lên `delay_days=2` của DB, kéo theo event `4` (`quote`) tính nhầm `20000` và chi tiền sai. |
